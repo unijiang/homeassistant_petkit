@@ -153,6 +153,7 @@ class PetkitWebRTCCamera(PetkitCameraBaseEntity):
         self._ice_servers: list[RTCIceServer] = []
         self._remove_ice_servers: Callable[[], None] | None = None
         self._go2rtc_browser_sessions: dict[str, _BrowserSession] = {}
+        self._cached_rtsp_url: str | None = None
 
     @property
     def available(self) -> bool:
@@ -175,6 +176,8 @@ class PetkitWebRTCCamera(PetkitCameraBaseEntity):
             attributes["go2rtc_stream_name"] = go2rtc_manager.stream_name(
                 str(self.device.id)
             )
+        if self._cached_rtsp_url:
+            attributes["stream_source_url"] = self._cached_rtsp_url
         return attributes
 
     async def async_added_to_hass(self) -> None:
@@ -184,7 +187,9 @@ class PetkitWebRTCCamera(PetkitCameraBaseEntity):
         self.hass.data[DOMAIN]["cameras"][str(self.device.id)] = self
         if get_go2rtc_stream_manager(self.hass).is_available():
             try:
-                await get_go2rtc_stream_manager(self.hass).async_ensure_stream(self)
+                rtsp = await get_go2rtc_stream_manager(self.hass).async_ensure_stream(self)
+                if rtsp:
+                    self._cached_rtsp_url = rtsp
             except RuntimeError as err:
                 LOGGER.debug(
                     "Failed to register shared go2rtc stream for %s: %s",
@@ -317,6 +322,7 @@ class PetkitWebRTCCamera(PetkitCameraBaseEntity):
         if go2rtc_manager.is_available():
             rtsp_url = await go2rtc_manager.async_ensure_stream(self)
             if rtsp_url:
+                self._cached_rtsp_url = rtsp_url
                 return rtsp_url
         return None
 
