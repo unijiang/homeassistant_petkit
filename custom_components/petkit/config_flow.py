@@ -40,6 +40,7 @@ from .const import (
     CODE_TO_COUNTRY_DICT,
     CONF_BLE_RELAY_ENABLED,
     CONF_DELETE_AFTER,
+    CONF_ENABLED_NOTIFICATIONS,
     CONF_MEDIA_DL_IMAGE,
     CONF_MEDIA_DL_VIDEO,
     CONF_MEDIA_EV_TYPE,
@@ -51,6 +52,7 @@ from .const import (
     DEFAULT_DELETE_AFTER,
     DEFAULT_DL_IMAGE,
     DEFAULT_DL_VIDEO,
+    DEFAULT_ENABLED_NOTIFICATIONS,
     DEFAULT_EVENTS,
     DEFAULT_MEDIA_PATH,
     DEFAULT_SCAN_INTERVAL_BLUETOOTH,
@@ -58,6 +60,8 @@ from .const import (
     DOMAIN,
     LOGGER,
     MEDIA_SECTION,
+    NOTIFICATION_CATEGORIES,
+    NOTIFICATION_SECTION,
 )
 
 
@@ -160,6 +164,29 @@ class PetkitOptionsFlowHandler(OptionsFlow):
                         ),
                         {"collapsed": False},
                     ),
+                    vol.Required(NOTIFICATION_SECTION): section(
+                        vol.Schema(
+                            {
+                                vol.Optional(
+                                    CONF_ENABLED_NOTIFICATIONS,
+                                    default=self.config_entry.options.get(
+                                        NOTIFICATION_SECTION, {}
+                                    ).get(
+                                        CONF_ENABLED_NOTIFICATIONS,
+                                        DEFAULT_ENABLED_NOTIFICATIONS,
+                                    ),
+                                ): selector.SelectSelector(
+                                    selector.SelectSelectorConfig(
+                                        multiple=True,
+                                        sort=False,
+                                        translation_key="petkit_notification_category",
+                                        options=list(NOTIFICATION_CATEGORIES),
+                                    )
+                                ),
+                            }
+                        ),
+                        {"collapsed": False},
+                    ),
                 }
             ),
         )
@@ -168,7 +195,7 @@ class PetkitOptionsFlowHandler(OptionsFlow):
 class PetkitFlowHandler(ConfigFlow, domain=DOMAIN):
     """Config flow for Petkit Smart Devices."""
 
-    VERSION = 7
+    VERSION = 8
 
     @staticmethod
     @callback
@@ -240,6 +267,11 @@ class PetkitFlowHandler(ConfigFlow, domain=DOMAIN):
                                 CONF_BLE_RELAY_ENABLED: DEFAULT_BLUETOOTH_RELAY,
                                 CONF_SCAN_INTERVAL_BLUETOOTH: DEFAULT_SCAN_INTERVAL_BLUETOOTH,
                             },
+                            NOTIFICATION_SECTION: {
+                                CONF_ENABLED_NOTIFICATIONS: list(
+                                    DEFAULT_ENABLED_NOTIFICATIONS
+                                ),
+                            },
                         },
                     )
 
@@ -284,6 +316,9 @@ class PetkitFlowHandler(ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=vol.Schema(data_schema),
             errors=_errors,
+            description_placeholders={
+                "wiki_url": "https://github.com/Jezza34000/homeassistant_petkit/wiki/Configuration"
+            },
         )
 
     async def _test_credentials(
