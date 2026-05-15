@@ -16,6 +16,8 @@ AGORA_APP_ID = "244c49951296440cbc1e3b937bf5e410"
 # Configuration
 CONF_SCAN_INTERVAL_MEDIA = "scan_interval_media"
 
+ADVANCED_SECTION = "advanced_options"
+
 BT_SECTION = "bluetooth_options"
 CONF_BLE_RELAY_ENABLED = "ble_relay_enabled"
 CONF_SCAN_INTERVAL_BLUETOOTH = "scan_interval_bluetooth"
@@ -98,7 +100,7 @@ BATTERY_LEVEL_MAP = {
 }
 
 # Text input regex
-INPUT_FEED_PATTERN = "^(0|[1-9][0-9]?|1[0-9]{2}|200)$"
+INPUT_FEED_PATTERN = "^(0|[1-9][0-9]?|[1-3][0-9]{2}|400)$"
 
 # Select list mapping
 SURPLUS_FOOD_LEVEL_OPT = {0: "Disabled", 1: "Less", 2: "Moderate", 3: "Full"}
